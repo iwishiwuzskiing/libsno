@@ -3,7 +3,6 @@
  * Err_log provides a basic error logging class. The class provides error
  * logging through the stream insertion operator (<<).
  *
- *
  */
 //todo: documentations
 
@@ -27,9 +26,9 @@
  */
 struct null_deleter
 {
-    void operator()(void const *) const
-    {
-    }
+  void operator()(void const *) const
+  {
+  }
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -41,13 +40,12 @@ struct null_deleter
 template<typename C,typename T = std::char_traits<C> >
 struct stream_info
 {
-    typedef std::basic_ostream<C,T>& (*StrFunc)(std::basic_ostream<C,T>&);
-    static std::basic_ostream<C,T>& Get_default();
+  typedef std::basic_ostream<C,T>& (*StrFunc)(std::basic_ostream<C,T>&);
+  static std::basic_ostream<C,T>& Get_default();
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define Log_error(...) Errlog(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 template<typename C,typename T = std::char_traits<C> >
 class Err_log
 {
@@ -78,11 +76,10 @@ public:
     ,m_curr_mag(mag)
     ,m_lock(m_mutex)
   {
-
     *m_out_stream << get_msg_prefix(scope);
   }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * @brief Errlog Log errors to a particular file, not to the "normal" log
@@ -93,14 +90,14 @@ public:
    */
   Err_log(std::string scope, EMag mag, std::string file)
     :
-      m_alt_stream(new std::ofstream(file.c_str(),std::ios_base::app))
+      m_alt_stream(new std::ofstream(file.c_str(), std::ios_base::app))
     ,m_curr_mag(mag)
     ,m_lock(m_mutex)
   {
     *m_alt_stream << get_msg_prefix(scope);
   }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * Destructor
@@ -110,7 +107,7 @@ public:
     //todo: write std::endl to streams??
   }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * @brief Set the logging level to a particular magnitude
@@ -122,7 +119,7 @@ public:
     m_mag = mag;
   }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * @brief Set_log_file Set the log file to write to
@@ -134,11 +131,10 @@ public:
     m_out_stream.reset(new std::ofstream(filename.c_str(),std::ios_base::app));
   }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Stream insertion operator. Does nothing if the stream isn't write-enabled
-   * otherwise writes
+   * Stream insertion operator.
    */
   template<class R>
   Err_log& operator<<(R obj)
@@ -156,15 +152,14 @@ public:
     return *this;
   }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Stream insertion operator. Does nothing if the stream isn't write-enabled
-   * otherwise writes
+   * Stream insertion operator.
    */
   Err_log& operator<<(typename stream_info<C,T>::StrFunc func)
   {
-    if (m_curr_mag >= m_mag)
+    if(m_curr_mag >= m_mag)
     {
       if(m_alt_stream)
       {
@@ -177,7 +172,7 @@ public:
     return *this;
   }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
 protected:
   //Variables
@@ -217,9 +212,12 @@ protected:
    * @brief set_ostream
    * @param stream
    */
-  static void set_ostream(boost::shared_ptr<std::basic_ostream<C,T> > stream) {m_out_stream = stream;}
+  static void set_ostream(boost::shared_ptr<std::basic_ostream<C,T> > stream)
+  {
+    m_out_stream = stream;
+  }
 
-//////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * @brief get_msg_prefix Get the start of the log message. The message prefix
@@ -255,30 +253,35 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-/* Initialize static members */
+// Initialize static members
 /**
  * @brief Mutex
  */
-template<typename C,typename T>
-boost::mutex Err_log<C,T>::m_mutex;
+template<typename C, typename T>
+boost::mutex Err_log<C, T>::m_mutex;
 
 /**
  * @brief The current error logging magnitude
  */
-template<typename C,typename T>
-typename Err_log<C,T>::EMag Err_log<C,T>::m_mag(Err_log<C,T>::EMAG_Debug);
+template<typename C, typename T>
+typename Err_log<C, T>::EMag Err_log<C ,T>::m_mag(Err_log<C,T>::EMAG_Debug);
 //boost::atomic<Errlog<C,T>::EMag> Errlog<C,T>::m_mag(Errlog::EMAG_Debug);
 
 /**
  * @brief m_out_stream The stream for writing errors to
  */
+//TODO: why is this a shared pointer?
 template<typename C,typename T>
 boost::shared_ptr<std::basic_ostream<C,T> > Err_log<C,T>::m_out_stream(&stream_info<C,T>::Get_default(), null_deleter());
 
 //////////////////////////////////////////////////////////////////////////////
-
+// Typedefs for common types of error loggers
 typedef Err_log<char> Errlog;
 typedef Err_log<wchar_t> WErrlog;
+
+//Macros to automatically insert scope
+#define Log_error(...) Errlog(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
+#define Log_werror(...) WErrlog(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 
 //////////////////////////////////////////////////////////////////////////////
 
