@@ -46,7 +46,7 @@ struct stream_info
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<typename C = char,typename T = std::char_traits<C> >
+template<typename C = char, typename T = std::char_traits<C> >
 class Logger
 {
 public:
@@ -182,7 +182,7 @@ private:
   static boost::mutex m_mutex;
 
   /**
-   * Error logging level
+   * @brief Error logging level
    */
   static Log_level m_mag;
 
@@ -276,7 +276,6 @@ boost::shared_ptr<std::basic_ostream<C,T> > Logger<C,T>::m_out_stream(&stream_in
 
 //////////////////////////////////////////////////////////////////////////////
 // Typedefs for common types of error loggers
-//typedef Logger<char> Errlog;
 typedef Logger<wchar_t> WLogger;
 
 //Macros to automatically insert scope
