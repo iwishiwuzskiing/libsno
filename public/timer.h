@@ -1,66 +1,27 @@
-///**
-// * @brief A simple timer
-// */
+/**
+ * @class Timer
+ * @brief A simple countdown timer
+ *
+ */
+#ifndef TIMER_H
+#define TIMER_H
+#include <memory>
 
-//#ifndef TIMER_H
-//#define TIMER_H
-//#include <chrono>
+class Timer_impl;
 
-//class Stopwatch
-//{
-//public:
-//  /**
-//   * @brief Constructor, a new stopwatch
-//   * @param init Number of seconds for the stopwatch to start at
-//   */
-//  Stopwatch(double init = 0);
+class Timer
+{
+public:
+  /**
+   * @brief Constructor. A new timer with the specified duration
+   */
+  Timer(const double duration);
 
-//  /**
-//   * @brief Start counting time
-//   * @param init Initial number of seconds for the stopwatch
-//   */
-//  void Start(double init = 0);
+private:
+  /**
+   * @brief m_pimpl Implementation
+   */
+  std::shared_ptr<Timer_impl> m_pimpl;
+};
 
-//  /**
-//   * @brief Stop counting time
-//   * @return Elapsed seconds
-//   */
-//  double Stop();
-
-//  /**
-//   * @brief Take a split
-//   * @return Number of seconds since the last split, or since the stopwatch was
-//   * started if this is the first split
-//   */
-//  double Split();
-
-//  /**
-//   * @brief Restart the stop watch
-//   * @param init Number of seconds to restart at
-//   * @return The number of seconds that had elapsed before the timer was
-//   * restarted
-//   */
-//  double Reset(double init = 0);
-
-//  /**
-//   * @brief Get the current number of seconds that have elapsed since the timer
-//   * was started
-//   * @return
-//   */
-//  double Time();
-
-//protected:
-
-//private:
-//  /**
-//   * @brief m_start_time Time when the timer started
-//   */
-//  std::chrono::time_point<std::chrono::high_resolution_clock> m_start_time;
-
-//  /**
-//   * @brief m_last_split Time when the last split was taken
-//   */
-//  std::chrono::time_point<std::chrono::high_resolution_clock> m_last_split;
-//};
-
-//#endif
+#endif
