@@ -14,6 +14,7 @@ class Timer
 public:
   /**
    * @brief Constructor. A new timer with the specified duration
+   * @param duration Amount of time the timer should count down for, seconds
    */
   Timer(const double duration);
 

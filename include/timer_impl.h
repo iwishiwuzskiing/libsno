@@ -11,7 +11,8 @@ class Timer_impl
 {
 public:
   /**
-   * @brief Default constructor. A new timer with the specified duration
+   * @brief Constructor. A new timer with the specified duration
+   * @param duration Amount of time the timer should count down for, seconds
    */
   Timer_impl(const double duration);
 
