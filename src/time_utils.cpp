@@ -1,4 +1,4 @@
-#include "time_utils.h"
+#include <time_utils.h>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -6,7 +6,7 @@
  * @brief Return the current unix time in decimal seconds
  * @return Time since 00:00 UTC on Jan 1 1970
  */
-double Time_utils::Unix_time()
+double so::Time_utils::Unix_time()
 {
   using namespace std::chrono;
   auto unix_timestamp = std::chrono::seconds(std::time(nullptr));

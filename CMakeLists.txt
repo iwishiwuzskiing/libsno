@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 2.8)
 #################################
 ## Define the project
 set(project_name sno)
-set(lib_name lib${project_name})
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My Library")
 #Directory for the rest of our CMake stuff

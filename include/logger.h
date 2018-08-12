@@ -46,22 +46,22 @@ struct stream_info
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<typename C,typename T = std::char_traits<C> >
-class Err_log
+template<typename C = char,typename T = std::char_traits<C> >
+class Logger
 {
 public:
   //Variables
   /**
-   * @brief Enumerated error magnitudes for error messages
+   * @brief Enumerated logging levels for messages
    */
-  enum EMag
+  enum Log_level
   {
-    EMAG_Unknown  = -1,
-    EMAG_Debug    = 10,
-    EMAG_Info     = 20,
-    EMAG_Warning  = 30,
-    EMAG_Severe   = 40,
-    EMAG_Fatal    = 50,
+    Unknown  = -1,
+    Debug    = 0x8,
+    Info     = 0x80,
+    Warning  = 0x800,
+    Severe   = 0x8000,
+    Fatal    = 0x80000,
   };
 
   //Functions
@@ -70,11 +70,11 @@ public:
    * @param scope Scope of the current error log message
    * @param mag Enumerated magnitude of the message
    */
-  Err_log(std::string scope, EMag mag)
+  Logger(std::string scope, Log_level mag)
     :
-      m_alt_stream()
-    ,m_curr_mag(mag)
-    ,m_lock(m_mutex)
+      m_alt_stream(),
+      m_curr_mag(mag),
+      m_lock(m_mutex)
   {
     *m_out_stream << get_msg_prefix(scope);
   }
@@ -88,11 +88,11 @@ public:
    * @param mag Enumerated logging magnitude
    * @param file Filename to write to
    */
-  Err_log(std::string scope, EMag mag, std::string file)
+  Logger(std::string scope, Log_level mag, std::string file)
     :
-      m_alt_stream(new std::ofstream(file.c_str(), std::ios_base::app))
-    ,m_curr_mag(mag)
-    ,m_lock(m_mutex)
+      m_alt_stream(new std::ofstream(file.c_str(), std::ios_base::app)),
+      m_curr_mag(mag),
+      m_lock(m_mutex)
   {
     *m_alt_stream << get_msg_prefix(scope);
   }
@@ -102,7 +102,7 @@ public:
   /**
    * Destructor
    */
-  ~Err_log()
+  ~Logger()
   {
     //todo: write std::endl to streams??
   }
@@ -113,7 +113,7 @@ public:
    * @brief Set the logging level to a particular magnitude
    * @param mag The enumerated magnitude to set the logging level to
    */
-  static void Set_logging_level(const EMag mag)
+  static void Set_logging_level(const Log_level mag)
   {
     boost::mutex::scoped_lock lock(m_mutex);
     m_mag = mag;
@@ -127,7 +127,7 @@ public:
    */
   static void Set_log_file(std::string filename)
   {
-    boost::mutex::scoped_lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
     m_out_stream.reset(new std::ofstream(filename.c_str(),std::ios_base::app));
   }
 
@@ -137,7 +137,7 @@ public:
    * Stream insertion operator.
    */
   template<class R>
-  Err_log& operator<<(R obj)
+  Logger& operator<<(R obj)
   {
     if(m_curr_mag >= m_mag)
     {
@@ -157,7 +157,7 @@ public:
   /**
    * Stream insertion operator.
    */
-  Err_log& operator<<(typename stream_info<C,T>::StrFunc func)
+  Logger& operator<<(typename stream_info<C,T>::StrFunc func)
   {
     if(m_curr_mag >= m_mag)
     {
@@ -174,7 +174,7 @@ public:
 
   //////////////////////////////////////////////////////////////////////////////
 
-protected:
+private:
   //Variables
   /**
    * @brief m_mutex
@@ -184,23 +184,25 @@ protected:
   /**
    * Error logging level
    */
-  static EMag m_mag;
+  static Log_level m_mag;
 
   /**
    * @brief m_out_stream Main stream for error logging. Defaults to std::cout
    * or std::wcout, but can be set to a file
    */
+  //TODO: why is this a shared pointer?
   static boost::shared_ptr<std::basic_ostream<C,T> > m_out_stream;
 
   /**
    * @brief m_local_stream Alternate stream for writing to a particular file
    */
+  //TODO: why is this a shared pointer?
   boost::shared_ptr<std::basic_ostream<C,T> > m_alt_stream;
 
   /**
    * @brief m_curr_mag Logging level of the current message
    */
-  EMag m_curr_mag;
+  Log_level m_curr_mag;
 
   /**
    * @brief m_lock Scoped lock, locked when Errlog is instantiated
@@ -231,11 +233,11 @@ protected:
     //Write the logging level
     switch(m_curr_mag)
     {
-    case(Err_log::EMAG_Debug): err_prefix = "DEBUG--";break;
-    case(Err_log::EMAG_Info): err_prefix = "INFO--";break;
-    case(Err_log::EMAG_Warning): err_prefix = "WARNING--";break;
-    case(Err_log::EMAG_Severe): err_prefix = "SEVERE--";break;
-    case(Err_log::EMAG_Fatal): err_prefix = "FATAL--";break;
+    case(Logger::Debug): err_prefix = "DEBUG--";break;
+    case(Logger::Info): err_prefix = "INFO--";break;
+    case(Logger::Warning): err_prefix = "WARNING--";break;
+    case(Logger::Severe): err_prefix = "SEVERE--";break;
+    case(Logger::Fatal): err_prefix = "FATAL--";break;
     default: err_prefix = " --";
     }
 
@@ -248,8 +250,6 @@ protected:
 
     return err_prefix;
   }
-
-private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -258,13 +258,13 @@ private:
  * @brief Mutex
  */
 template<typename C, typename T>
-boost::mutex Err_log<C, T>::m_mutex;
+boost::mutex Logger<C, T>::m_mutex;
 
 /**
  * @brief The current error logging magnitude
  */
 template<typename C, typename T>
-typename Err_log<C, T>::EMag Err_log<C ,T>::m_mag(Err_log<C,T>::EMAG_Debug);
+typename Logger<C, T>::Log_level Logger<C ,T>::m_mag(Logger<C,T>::Debug);
 //boost::atomic<Errlog<C,T>::EMag> Errlog<C,T>::m_mag(Errlog::EMAG_Debug);
 
 /**
@@ -272,16 +272,16 @@ typename Err_log<C, T>::EMag Err_log<C ,T>::m_mag(Err_log<C,T>::EMAG_Debug);
  */
 //TODO: why is this a shared pointer?
 template<typename C,typename T>
-boost::shared_ptr<std::basic_ostream<C,T> > Err_log<C,T>::m_out_stream(&stream_info<C,T>::Get_default(), null_deleter());
+boost::shared_ptr<std::basic_ostream<C,T> > Logger<C,T>::m_out_stream(&stream_info<C,T>::Get_default(), null_deleter());
 
 //////////////////////////////////////////////////////////////////////////////
 // Typedefs for common types of error loggers
-typedef Err_log<char> Errlog;
-typedef Err_log<wchar_t> WErrlog;
+//typedef Logger<char> Errlog;
+typedef Logger<wchar_t> WLogger;
 
 //Macros to automatically insert scope
-#define Log_error(...) Errlog(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
-#define Log_werror(...) WErrlog(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
+#define Log_msg(...) Errlog(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
+#define Log_wmsg(...) WLogger(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 
 //////////////////////////////////////////////////////////////////////////////
 

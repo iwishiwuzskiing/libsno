@@ -1,14 +1,17 @@
 #ifndef ERROR_CODES_H
 #define ERROR_CODES_H
 
-class Error_codes
+namespace so
 {
-public:
-  enum ECode
-  {
-    ECODE_Unknown = -1,
-    ECODE_Success,
-  };
+enum class Error_codes
+{
+  ECODE_Success = 0,
 };
+
+namespace ECode_Utils
+{
+
+}
+}
 
 #endif
