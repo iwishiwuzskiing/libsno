@@ -1,0 +1,7 @@
+build*
+*.user
+*.deb
+*.so
+*.a
+*.o
+
