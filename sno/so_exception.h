@@ -38,6 +38,17 @@ public:
   }
 };
 
+class Invalid_argument : public so::runtime_error
+{
+public:
+  template<class T>
+  Invalid_argument(const T what)
+    : so::runtime_error(what)
+  {
+
+  }
+};
+
 } // namespace so
 
 #endif

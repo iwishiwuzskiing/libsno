@@ -5,7 +5,7 @@
  */
 #ifndef TIMER_IMPL_H
 #define TIMER_IMPL_H
-#include <time_utils.h>
+#include <thread>
 
 class Timer_impl
 {
@@ -18,10 +18,16 @@ public:
 
 private:
   /**
-   * @brief m_duration Duration for the time
+   * @brief m_duration Duration for the timer
    */
   double m_duration;
+
   double m_start_time;
+
+  /**
+   * @brief m_timer_thread Thread running the countdown
+   */
+  std::thread m_timer_thread;
 };
 
 #endif
