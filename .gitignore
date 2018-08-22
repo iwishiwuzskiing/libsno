@@ -4,4 +4,4 @@ build*
 *.so
 *.a
 *.o
-
+*sno_version.h
