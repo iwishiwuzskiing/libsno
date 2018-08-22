@@ -1,6 +1,6 @@
 #include <boost/numeric/conversion/cast.hpp>
-#include <time_utils.h>
-#include <so_exception.h>
+#include <sno/time_utils.h>
+#include <sno/so_exception.h>
 
 double so::Time_utils::Unix_time()
 {

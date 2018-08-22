@@ -9,4 +9,4 @@ set(project_name sno)
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My Library")
 #Directory for the rest of our CMake stuff
 set(cmake_dir /home/shay/development/cmake)
-include(${cmake_dir}/basic_lib.cmake)
+include(${cmake_dir}/pimpl_lib.cmake)

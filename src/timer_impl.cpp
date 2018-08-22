@@ -1,5 +1,6 @@
+#include <sno/time_utils.h>
 #include <timer_impl.h>
-#include <time_utils.h>
+
 //////////////////////////////////////////////////////////////////////////////
 
 Timer_impl::Timer_impl(const double duration)
