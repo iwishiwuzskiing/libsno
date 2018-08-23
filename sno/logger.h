@@ -57,11 +57,11 @@ public:
   enum Log_level
   {
     Unknown  = -1,
-    Debug    = 0x8,
-    Info     = 0x80,
-    Warning  = 0x800,
-    Severe   = 0x8000,
-    Fatal    = 0x80000,
+    Debug    = 0x00000F,
+    Info     = 0x0000FF,
+    Warning  = 0x000FFF,
+    Severe   = 0x00FFFF,
+    Fatal    = 0x0FFFFF,
   };
 
   //Functions
@@ -279,7 +279,7 @@ boost::shared_ptr<std::basic_ostream<C,T> > Logger<C,T>::m_out_stream(&stream_in
 typedef Logger<wchar_t> WLogger;
 
 //Macros to automatically insert scope
-#define Log_msg(...) Errlog(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
+#define Log_msg(...) Logger<>(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 #define Log_wmsg(...) WLogger(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 
 //////////////////////////////////////////////////////////////////////////////

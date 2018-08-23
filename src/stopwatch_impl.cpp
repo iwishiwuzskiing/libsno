@@ -1,81 +1,99 @@
-//#include <stopwatch_impl.h>
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-//using namespace std::chrono;
+#include <boost/numeric/conversion/cast.hpp>
 
-///**
-// * @brief Constructor, a new stopwatch
-// * @param init Number of seconds for the stopwatch to start at
-// */
-//Stopwatch::Stopwatch(double init)
-//  :
-//    m_start_time(),
-//    m_last_split(m_start_time)
-//{
-//  //std::chrono::time_point<std::chrono::high_resolution_clock> tp =
-//      //high_resolution_clock::now() - high_resolution_clock::duration<double>(init);
-//}
+#include <sno/so_exception.h>
+#include <stopwatch_impl.h>
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
-///**
-// * @brief Start counting time
-// * @param init Initial number of seconds for the stopwatch
-// */
-//void Stopwatch::Start(double init)
-//{
+Stopwatch_impl::Stopwatch_impl()
+  :
+    m_start_time(),
+    m_last_split(m_start_time),
+    m_elapsed_time(0),
+    m_running(false)
+{
 
-//}
+}
 
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
-///**
-// * @brief Stop counting time
-// * @return Elapsed seconds
-// */
-//double Stopwatch::Stop()
-//{
+void Stopwatch_impl::Start()
+{
+  if(m_running)
+  {
+    return;
+  }
+  Reset();
+  m_running = true;
+}
 
-//}
+//////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+double Stopwatch_impl::Stop()
+{
+  update_elapsed_time();
+  m_running = false;
+  return m_elapsed_time;
+}
 
-///**
-// * @brief Take a split
-// * @return Number of seconds since the last split, or since the stopwatch was
-// * started if this is the first split
-// */
-//double Stopwatch::Split()
-//{
+//////////////////////////////////////////////////////////////////////////////
 
-//}
+double Stopwatch_impl::Split()
+{
+  if(!m_running)
+  {
+    return 0;
+  }
+  std::chrono::time_point<Clock_type> now = Clock_type::now();
+  auto us = std::chrono::duration_cast<std::chrono::microseconds>(now - m_last_split).count();
+  m_last_split = now;
+  try
+  {
+    double seconds = boost::numeric_cast<double>(us) / 1.0e6;
+    return seconds;
+  }
+  catch(const boost::bad_numeric_cast& e)
+  {
+    throw so::runtime_error(e.what());
+  }
+}
 
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
-///**
-// * @brief Restart the stop watch
-// * @param init Number of seconds to restart at
-// * @return The number of seconds that had elapsed before the timer was
-// * restarted
-// */
-//double Stopwatch::Reset(double init )
-//{
+void Stopwatch_impl::Reset()
+{
+  m_start_time = Clock_type::now();
+  m_last_split = Clock_type::now();
+  m_elapsed_time = 0;
+}
 
-//}
+//////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+double Stopwatch_impl::Get_time()
+{
+  update_elapsed_time();
+  return m_elapsed_time;
+}
 
-///**
-// * @brief Get the current number of seconds that have elapsed since the timer
-// * was started
-// * @return
-// */
-//double Stopwatch::Time()
-//{
+//////////////////////////////////////////////////////////////////////////////
 
-//}
-
-////////////////////////////////////////////////////////////////////////////////
+void Stopwatch_impl::update_elapsed_time()
+{
+  if(m_running)
+  {
+    auto us = std::chrono::duration_cast<std::chrono::microseconds>(Clock_type::now() - m_start_time).count();
+    try
+    {
+      double seconds = boost::numeric_cast<double>(us) / 1.0e6;
+      m_elapsed_time = seconds;
+    }
+    catch(const boost::bad_numeric_cast& e)
+    {
+      throw so::runtime_error(e.what());
+    }
+  }
+}

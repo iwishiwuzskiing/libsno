@@ -1,66 +1,84 @@
-///**
-// * @brief A simple timer
-// */
+/**
+ * @brief A simple stopwatch
+ */
 
-//#ifndef STOPWATCH_IMPL_H
-//#define STOPWATCH_IMPL_H
-//#include <chrono>
+#ifndef STOPWATCH_IMPL_H
+#define STOPWATCH_IMPL_H
+#include <chrono>
 
-//class Stopwatch
-//{
-//public:
-//  /**
-//   * @brief Constructor, a new stopwatch
-//   * @param init Number of seconds for the stopwatch to start at
-//   */
-//  Stopwatch(double init = 0);
+class Stopwatch_impl
+{
+public:
+  typedef std::chrono::steady_clock Clock_type;
 
-//  /**
-//   * @brief Start counting time
-//   * @param init Initial number of seconds for the stopwatch
-//   */
-//  void Start(double init = 0);
+  /**
+   * @brief Constructor, a new stopwatch
+   */
+  Stopwatch_impl();
 
-//  /**
-//   * @brief Stop counting time
-//   * @return Elapsed seconds
-//   */
-//  double Stop();
+  /**
+   * @brief Start the stopwatch. Does nothing if the stopwatch is already
+   * running
+   */
+  void Start();
 
-//  /**
-//   * @brief Take a split
-//   * @return Number of seconds since the last split, or since the stopwatch was
-//   * started if this is the first split
-//   */
-//  double Split();
+  /**
+   * @brief Stop the stopwatch but do not reset the elapsed time. Does nothing
+   * if the stopwatch not running
+   * @return Elapsed time, seconds
+   * @throws so::runtime_exception if the number of microseconds in the
+   * current elapsed time cannot be represented by a double
+   */
+  double Stop();
 
-//  /**
-//   * @brief Restart the stop watch
-//   * @param init Number of seconds to restart at
-//   * @return The number of seconds that had elapsed before the timer was
-//   * restarted
-//   */
-//  double Reset(double init = 0);
+  /**
+   * @brief Take a split
+   * @return Number of seconds since the last split, or since the stopwatch was
+   * started if this is the first split. Returns 0 if the timer isn't running
+   * @throws so::runtime_exception if the number of microseconds in the
+   * current split cannot be represented by a double
+   */
+  double Split();
 
-//  /**
-//   * @brief Get the current number of seconds that have elapsed since the timer
-//   * was started
-//   * @return
-//   */
-//  double Time();
+  /**
+   * @brief Reset the stopwatch
+   */
+  void Reset();
 
-//protected:
+  /**
+   * @brief Get the current elapsed time since the stopwatch was started
+   * @return Current elapsed time since the stopwatch was started, seconds
+   * @throws so::runtime_exception if the number of microseconds in the
+   * current elapsed time cannot be represented by a double
+   */
+  double Get_time();
 
-//private:
-//  /**
-//   * @brief m_start_time Time when the timer started
-//   */
-//  std::chrono::time_point<std::chrono::high_resolution_clock> m_start_time;
+private:
 
-//  /**
-//   * @brief m_last_split Time when the last split was taken
-//   */
-//  std::chrono::time_point<std::chrono::high_resolution_clock> m_last_split;
-//};
+  /**
+   * @brief m_start_time Time when the stopwatch started
+   */
+  std::chrono::time_point<Clock_type> m_start_time;
 
-//#endif
+  /**
+   * @brief m_last_split Time when the last split was taken
+   */
+  std::chrono::time_point<Clock_type> m_last_split;
+
+  /**
+   * @brief elapsed_time Last runtime of the stopwatch
+   */
+  double m_elapsed_time;
+
+  /**
+   * @brief m_running True if the stopwatch is running
+   */
+  bool m_running;
+
+  /**
+   * @brief update_elapsed_time Update the current elapsed time
+   */
+  void update_elapsed_time();
+};
+
+#endif
