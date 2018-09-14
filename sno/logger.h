@@ -47,7 +47,7 @@ struct stream_info
 //////////////////////////////////////////////////////////////////////////////
 
 template<typename C = char, typename T = std::char_traits<C> >
-class Logger
+class Basic_logger
 {
 public:
   //Variables
@@ -70,7 +70,7 @@ public:
    * @param scope Scope of the current error log message
    * @param mag Enumerated magnitude of the message
    */
-  Logger(std::string scope, Log_level mag)
+  Basic_logger(std::string scope, Log_level mag)
     :
       m_alt_stream(),
       m_curr_mag(mag),
@@ -88,7 +88,7 @@ public:
    * @param mag Enumerated logging magnitude
    * @param file Filename to write to
    */
-  Logger(std::string scope, Log_level mag, std::string file)
+  Basic_logger(std::string scope, Log_level mag, std::string file)
     :
       m_alt_stream(new std::ofstream(file.c_str(), std::ios_base::app)),
       m_curr_mag(mag),
@@ -102,7 +102,7 @@ public:
   /**
    * Destructor
    */
-  ~Logger()
+  ~Basic_logger()
   {
     //todo: write std::endl to streams??
   }
@@ -137,7 +137,7 @@ public:
    * Stream insertion operator.
    */
   template<class R>
-  Logger& operator<<(R obj)
+  Basic_logger& operator<<(R obj)
   {
     if(m_curr_mag >= m_mag)
     {
@@ -157,7 +157,7 @@ public:
   /**
    * Stream insertion operator.
    */
-  Logger& operator<<(typename stream_info<C,T>::StrFunc func)
+  Basic_logger& operator<<(typename stream_info<C,T>::StrFunc func)
   {
     if(m_curr_mag >= m_mag)
     {
@@ -233,11 +233,11 @@ private:
     //Write the logging level
     switch(m_curr_mag)
     {
-    case(Logger::Debug): err_prefix = "DEBUG--";break;
-    case(Logger::Info): err_prefix = "INFO--";break;
-    case(Logger::Warning): err_prefix = "WARNING--";break;
-    case(Logger::Severe): err_prefix = "SEVERE--";break;
-    case(Logger::Fatal): err_prefix = "FATAL--";break;
+    case(Basic_logger::Debug): err_prefix = "DEBUG--";break;
+    case(Basic_logger::Info): err_prefix = "INFO--";break;
+    case(Basic_logger::Warning): err_prefix = "WARNING--";break;
+    case(Basic_logger::Severe): err_prefix = "SEVERE--";break;
+    case(Basic_logger::Fatal): err_prefix = "FATAL--";break;
     default: err_prefix = " --";
     }
 
@@ -258,13 +258,13 @@ private:
  * @brief Mutex
  */
 template<typename C, typename T>
-boost::mutex Logger<C, T>::m_mutex;
+boost::mutex Basic_logger<C, T>::m_mutex;
 
 /**
  * @brief The current error logging magnitude
  */
 template<typename C, typename T>
-typename Logger<C, T>::Log_level Logger<C ,T>::m_mag(Logger<C,T>::Debug);
+typename Basic_logger<C, T>::Log_level Basic_logger<C ,T>::m_mag(Basic_logger<C,T>::Debug);
 //boost::atomic<Errlog<C,T>::EMag> Errlog<C,T>::m_mag(Errlog::EMAG_Debug);
 
 /**
@@ -272,14 +272,15 @@ typename Logger<C, T>::Log_level Logger<C ,T>::m_mag(Logger<C,T>::Debug);
  */
 //TODO: why is this a shared pointer?
 template<typename C,typename T>
-boost::shared_ptr<std::basic_ostream<C,T> > Logger<C,T>::m_out_stream(&stream_info<C,T>::Get_default(), null_deleter());
+boost::shared_ptr<std::basic_ostream<C,T> > Basic_logger<C,T>::m_out_stream(&stream_info<C,T>::Get_default(), null_deleter());
 
 //////////////////////////////////////////////////////////////////////////////
 // Typedefs for common types of error loggers
-typedef Logger<wchar_t> WLogger;
+typedef Basic_logger<wchar_t> WLogger;
+typedef Basic_logger<char> Logger;
 
 //Macros to automatically insert scope
-#define Log_msg(...) Logger<>(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
+#define Log_msg(...) Logger(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 #define Log_wmsg(...) WLogger(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 
 //////////////////////////////////////////////////////////////////////////////
