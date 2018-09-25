@@ -26,6 +26,7 @@ public:
   typedef Eigen::Matrix<double, 1, N> Matrix1N;
   typedef Eigen::Matrix<double, N, 1> MatrixN1;
   typedef Eigen::Matrix<double, N, M> MatrixNM;
+  typedef Eigen::Matrix<double, M, 1> MatrixM1;
 
 public:
   /**
@@ -64,23 +65,23 @@ public:
    */
   void Predict(const double t)
   {
-    MatrixN1 u = MatrixN1::Zero();
+    MatrixM1 u = MatrixM1::Zero();
     Predict(u, t);
   }
 
   /**
    * @brief Predict the system state based on the current state and the current
    * inputs, u
-   * @param u Current inputs to the system, Nx1
+   * @param u Current inputs to the system, Mx1
    * @param t Current timestamp
    */
-  void Predict(const MatrixN1& u, const double t)
+  void Predict(const MatrixM1& u, const double t)
   {
     double dt = t - m_last_timestamp;
-//    MatrixNN A = m_A(dt);
-//    MatrixNM B = m_B(dt);
-//    m_x = A * m_x + B * u;
-//    m_P = A * m_P * A.transpose() + m_Q;
+    MatrixNN A = m_A(dt);
+    MatrixNM B = m_B(dt);
+    m_x = A * m_x + B * u;
+    m_P = A * m_P * A.transpose() + m_Q;
   }
 
   /**
@@ -118,9 +119,9 @@ public:
    * from a 0 mean normal distribution with covariance R. v~N(0,R). Predict()
    * function should be called to propagate the estimated solution up to the
    * current timestamp before update.
-   * @param z Observation, Mx1
-   * @param H Observation model, maps true state space to observed state space, MxN
-   * @param R Observation error covariance, MxM
+   * @param z Observation, Ux1
+   * @param H Observation model, maps true state space to observed state space, UxN
+   * @param R Observation error covariance, UxU
    * @param t Timestamp of observations, seconds since UNIX epoch
    */
   template<int U>
@@ -146,7 +147,7 @@ public:
 
     // Joseph form of error covariance, valid for any Kalman gain
     m_P = (MatrixNN::Identity() - K*H) * m_P *
-          (MatrixNN::Identity() - K*H).transpose() +
+          (MatrixNN::Identity() - K*H).eval().transpose() +
           K * R * K.transpose();
   }
 

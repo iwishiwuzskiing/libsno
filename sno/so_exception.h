@@ -49,6 +49,28 @@ public:
   }
 };
 
+class Read_error : public so::runtime_error
+{
+public:
+  template<class T>
+  Read_error(const T what)
+    : so::runtime_error(what)
+  {
+
+  }
+};
+
+class Write_error : public so::runtime_error
+{
+public:
+  template<class T>
+  Write_error(const T what)
+    : so::runtime_error(what)
+  {
+
+  }
+};
+
 } // namespace so
 
 #endif
