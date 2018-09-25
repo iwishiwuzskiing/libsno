@@ -5,7 +5,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-Timer::Timer(const double duration)
+so::Timer::Timer(const double duration)
   :
     m_pimpl(new Timer_impl(duration))
 {

@@ -1,5 +1,8 @@
 #include <memory>
 
+namespace so
+{
+
 class Stopwatch_impl;
 
 class Stopwatch
@@ -51,3 +54,5 @@ private:
    */
   std::shared_ptr<Stopwatch_impl> m_pimpl;
 };
+
+} // namespace so

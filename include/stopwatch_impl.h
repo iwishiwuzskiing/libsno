@@ -2,9 +2,12 @@
  * @brief A simple stopwatch
  */
 
-#ifndef STOPWATCH_IMPL_H
-#define STOPWATCH_IMPL_H
+#ifndef SO_STOPWATCH_IMPL_H
+#define SO_STOPWATCH_IMPL_H
 #include <chrono>
+
+namespace so
+{
 
 class Stopwatch_impl
 {
@@ -81,4 +84,5 @@ private:
   void update_elapsed_time();
 };
 
+}
 #endif

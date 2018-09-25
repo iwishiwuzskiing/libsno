@@ -12,7 +12,7 @@
  * @return Return the matrix for transormation to coordinate frame rotated by
  * theta degrees
  */
-Eigen::Matrix3d Rotate::rot_x(double theta)
+Eigen::Matrix3d so::Rotate::rot_x(double theta)
 {
   Eigen::Matrix3d m;
   double rad = theta * DEG_TO_RAD;
@@ -32,7 +32,7 @@ Eigen::Matrix3d Rotate::rot_x(double theta)
  * @return Return the matrix for transormation to coordinate frame rotated by
  * theta degrees
  */
-Eigen::Matrix3d Rotate::rot_y(double theta)
+Eigen::Matrix3d so::Rotate::rot_y(double theta)
 {
   Eigen::Matrix3d m;
   double rad = theta * DEG_TO_RAD;
@@ -52,7 +52,7 @@ Eigen::Matrix3d Rotate::rot_y(double theta)
  * @return Return the matrix for transormation to coordinate frame rotated by
  * theta degrees
  */
-Eigen::Matrix3d Rotate::rot_z(double theta)
+Eigen::Matrix3d so::Rotate::rot_z(double theta)
 {
   Eigen::Matrix3d m;
   double rad = theta * DEG_TO_RAD;

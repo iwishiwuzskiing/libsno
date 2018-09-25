@@ -3,9 +3,12 @@
  * @brief Implementation for a simple countdown timer
  *
  */
-#ifndef TIMER_IMPL_H
-#define TIMER_IMPL_H
+#ifndef SO_TIMER_IMPL_H
+#define SO_TIMER_IMPL_H
 #include <thread>
+
+namespace so
+{
 
 class Timer_impl
 {
@@ -29,5 +32,7 @@ private:
    */
   std::thread m_timer_thread;
 };
+
+}
 
 #endif

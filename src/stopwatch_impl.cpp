@@ -9,7 +9,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-Stopwatch_impl::Stopwatch_impl()
+so::Stopwatch_impl::Stopwatch_impl()
   :
     m_start_time(),
     m_last_split(m_start_time),
@@ -21,7 +21,7 @@ Stopwatch_impl::Stopwatch_impl()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void Stopwatch_impl::Start()
+void so::Stopwatch_impl::Start()
 {
   if(m_running)
   {
@@ -33,7 +33,7 @@ void Stopwatch_impl::Start()
 
 //////////////////////////////////////////////////////////////////////////////
 
-double Stopwatch_impl::Stop()
+double so::Stopwatch_impl::Stop()
 {
   update_elapsed_time();
   m_running = false;
@@ -42,7 +42,7 @@ double Stopwatch_impl::Stop()
 
 //////////////////////////////////////////////////////////////////////////////
 
-double Stopwatch_impl::Split()
+double so::Stopwatch_impl::Split()
 {
   if(!m_running)
   {
@@ -64,7 +64,7 @@ double Stopwatch_impl::Split()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void Stopwatch_impl::Reset()
+void so::Stopwatch_impl::Reset()
 {
   m_start_time = Clock_type::now();
   m_last_split = Clock_type::now();
@@ -73,7 +73,7 @@ void Stopwatch_impl::Reset()
 
 //////////////////////////////////////////////////////////////////////////////
 
-double Stopwatch_impl::Get_time()
+double so::Stopwatch_impl::Get_time()
 {
   update_elapsed_time();
   return m_elapsed_time;
@@ -81,7 +81,7 @@ double Stopwatch_impl::Get_time()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void Stopwatch_impl::update_elapsed_time()
+void so::Stopwatch_impl::update_elapsed_time()
 {
   if(m_running)
   {

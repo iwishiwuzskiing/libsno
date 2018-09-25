@@ -7,6 +7,8 @@
 #define TIMER_H
 #include <memory>
 
+namespace so
+{
 class Timer_impl;
 
 class Timer
@@ -51,5 +53,6 @@ private:
    */
   std::shared_ptr<Timer_impl> m_pimpl;
 };
+} // namespace so
 
 #endif

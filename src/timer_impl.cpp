@@ -3,7 +3,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-Timer_impl::Timer_impl(const double duration)
+so::Timer_impl::Timer_impl(const double duration)
   :
     m_duration(duration)
 {
