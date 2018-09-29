@@ -56,24 +56,32 @@ public:
    */
   enum Log_level
   {
-    Unknown  = -1,
-    Debug    = 0x00000F,
-    Info     = 0x0000FF,
-    Warning  = 0x000FFF,
-    Severe   = 0x00FFFF,
-    Fatal    = 0x0FFFFF,
+    Debug     = 0xFFFFFFFFFF,
+    Debug_Tx  = 0x01FFFFFFFF,
+    Debug_Rx  = 0x02FFFFFFFF,
+    Debug_3   = 0x04FFFFFFFF,
+    Debug_4   = 0x08FFFFFFFF,
+    Debug_5   = 0x10FFFFFFFF,
+    Debug_6   = 0x20FFFFFFFF,
+    Debug_7   = 0x40FFFFFFFF,
+    Debug_8   = 0x80FFFFFFFF,
+
+    Info      = 0x00FFFFFFFF,
+    Warning   = 0x0000FFFFFF,
+    Severe    = 0x000000FFFF,
+    Fatal     = 0x00000000FF,
   };
 
   //Functions
   /**
    * @brief Errlog Log errors
    * @param scope Scope of the current error log message
-   * @param mag Enumerated magnitude of the message
+   * @param level Logging level of this message
    */
-  Basic_logger(std::string scope, Log_level mag)
+  Basic_logger(const std::string scope, const Log_level level)
     :
       m_alt_stream(),
-      m_curr_mag(mag),
+      m_msg_level(level),
       m_lock(m_mutex)
   {
     *m_out_stream << get_msg_prefix(scope);
@@ -85,13 +93,15 @@ public:
    * @brief Errlog Log errors to a particular file, not to the "normal" log
    * location written to by m_out_stream
    * @param scope Scope of the current error log message
-   * @param mag Enumerated logging magnitude
+   * @param level Logging level of this message
    * @param file Filename to write to
    */
-  Basic_logger(std::string scope, Log_level mag, std::string file)
+  Basic_logger(const std::string scope,
+               const Log_level level,
+               const std::string file)
     :
       m_alt_stream(new std::ofstream(file.c_str(), std::ios_base::app)),
-      m_curr_mag(mag),
+      m_msg_level(level),
       m_lock(m_mutex)
   {
     *m_alt_stream << get_msg_prefix(scope);
@@ -104,7 +114,7 @@ public:
    */
   ~Basic_logger()
   {
-    //todo: write std::endl to streams??
+    //TODO: write std::endl to streams?? Just call flush()?
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -113,10 +123,10 @@ public:
    * @brief Set the logging level to a particular magnitude
    * @param mag The enumerated magnitude to set the logging level to
    */
-  static void Set_logging_level(const Log_level mag)
+  static void Set_logging_level(const uint64_t mag)
   {
     boost::mutex::scoped_lock lock(m_mutex);
-    m_mag = mag;
+    m_logging_mask = mag;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -137,9 +147,9 @@ public:
    * Stream insertion operator.
    */
   template<class R>
-  Basic_logger& operator<<(R obj)
+  Basic_logger& operator<<(const R obj)
   {
-    if(m_curr_mag >= m_mag)
+    if( (m_msg_level & m_logging_mask) == m_msg_level )
     {
       if(m_alt_stream)
       {
@@ -159,7 +169,7 @@ public:
    */
   Basic_logger& operator<<(typename stream_info<C,T>::StrFunc func)
   {
-    if(m_curr_mag >= m_mag)
+    if( (m_msg_level & m_logging_mask) == m_msg_level )
     {
       if(m_alt_stream)
       {
@@ -182,9 +192,9 @@ private:
   static boost::mutex m_mutex;
 
   /**
-   * @brief Error logging level
+   * @briefm_loggin_mask  Error logging level mask
    */
-  static Log_level m_mag;
+  static uint64_t m_logging_mask;
 
   /**
    * @brief m_out_stream Main stream for error logging. Defaults to std::cout
@@ -200,9 +210,9 @@ private:
   boost::shared_ptr<std::basic_ostream<C,T> > m_alt_stream;
 
   /**
-   * @brief m_curr_mag Logging level of the current message
+   * @brief m_msg_level Logging level of the current message
    */
-  Log_level m_curr_mag;
+  uint64_t m_msg_level;
 
   /**
    * @brief m_lock Scoped lock, locked when Errlog is instantiated
@@ -231,14 +241,25 @@ private:
   {
     std::string err_prefix;
     //Write the logging level
-    switch(m_curr_mag)
+    if(m_logging_mask >= 0x0100000000)
     {
-    case(Basic_logger::Debug): err_prefix = "DEBUG--";break;
-    case(Basic_logger::Info): err_prefix = "INFO--";break;
-    case(Basic_logger::Warning): err_prefix = "WARNING--";break;
-    case(Basic_logger::Severe): err_prefix = "SEVERE--";break;
-    case(Basic_logger::Fatal): err_prefix = "FATAL--";break;
-    default: err_prefix = " --";
+      err_prefix = "DEBUG--";
+    }
+    else if(m_logging_mask >= 0x0001000000)
+    {
+      err_prefix = "INFO--";
+    }
+    else if(m_logging_mask >= 0x0000010000)
+    {
+      err_prefix = "WARNING--";
+    }
+    else if(m_logging_mask >= 0x0000000100)
+    {
+      err_prefix = "SEVERE--";
+    }
+    else //if(m_logging_mask >= 0x0000000001)
+    {
+      err_prefix = "FATAL--";
     }
 
     //Get the scope
