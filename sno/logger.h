@@ -285,13 +285,13 @@ boost::mutex Basic_logger<C, T>::m_mutex;
  * @brief The current error logging magnitude
  */
 template<typename C, typename T>
-typename Basic_logger<C, T>::Log_level Basic_logger<C ,T>::m_mag(Basic_logger<C,T>::Debug);
-//boost::atomic<Errlog<C,T>::EMag> Errlog<C,T>::m_mag(Errlog::EMAG_Debug);
+uint64_t Basic_logger<C ,T>::m_logging_mask(Basic_logger<C,T>::Debug);
 
 /**
  * @brief m_out_stream The stream for writing errors to
+ * Implemented as a pointer so because a null stream is used to signify that
+ * errors should be logged to the default stream
  */
-//TODO: why is this a shared pointer?
 template<typename C,typename T>
 boost::shared_ptr<std::basic_ostream<C,T> > Basic_logger<C,T>::m_out_stream(&stream_info<C,T>::Get_default(), null_deleter());
 

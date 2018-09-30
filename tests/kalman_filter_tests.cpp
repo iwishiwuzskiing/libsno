@@ -25,12 +25,12 @@ TEST(KalmanTests, TestFunctionCompilation)
   k32.Predict(t);
   k32.Predict(M1, t);
 
-  k32.Update(t, N1.transpose(), t, t);
+  k32.Update(t, N1.transpose(), t);
 
   Eigen::Matrix<double, U, U> UU;
   Eigen::Matrix<double, U, 1> U1;
   Eigen::Matrix<double, U, N> UN;
-  k32.Update(U1, UN, UU, t);
+  k32.Update(U1, UN, UU);
 }
 
 }

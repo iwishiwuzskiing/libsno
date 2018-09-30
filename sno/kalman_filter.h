@@ -78,6 +78,7 @@ public:
   void Predict(const MatrixM1& u, const double t)
   {
     double dt = t - m_last_timestamp;
+    m_last_timestamp = t;
     MatrixNN A = m_A(dt);
     MatrixNM B = m_B(dt);
     m_x = A * m_x + B * u;
@@ -94,22 +95,14 @@ public:
    * @param z Observation, scalar
    * @param H Observation model, maps true state space to observed state space, 1xN
    * @param R Observation error covariance, scalar
-   * @param t Timestamp of observations, seconds since UNIX epoch
    */
-  //TODO: I had this commented out. Why?
   void Update(const double z,
               const Matrix1N& H,
-              const double R,
-              const double t)
+              const double R)
   {
     Update(Eigen::Matrix<double, 1, 1>(z),
            H,
-           Eigen::Matrix<double, 1, 1>(R),
-           t);
-
-    // Original. Is a double implicitly convertible to a 1x1 matrix?
-//    Update(Eigen::Matrix<double, 1, 1>(z), H, R, t);
-
+           Eigen::Matrix<double, 1, 1>(R));
   }
 
   /**
@@ -122,13 +115,11 @@ public:
    * @param z Observation, Ux1
    * @param H Observation model, maps true state space to observed state space, UxN
    * @param R Observation error covariance, UxU
-   * @param t Timestamp of observations, seconds since UNIX epoch
    */
   template<int U>
   void Update(const Eigen::Matrix<double, U, 1> z,
               const Eigen::Matrix<double, U, N>& H,
-              const Eigen::Matrix<double, U, U>& R,
-              const double t)
+              const Eigen::Matrix<double, U, U>& R)
   {
     // Innovation
     Eigen::Matrix<double, U, 1> y = z - H * m_x;
@@ -146,9 +137,11 @@ public:
     m_P = (MatrixNN::Identity() - K*H) * m_P;
 
     // Joseph form of error covariance, valid for any Kalman gain
-    m_P = (MatrixNN::Identity() - K*H) * m_P *
-          (MatrixNN::Identity() - K*H).eval().transpose() +
-          K * R * K.transpose();
+//    m_P = (MatrixNN::Identity() - K*H) * m_P *
+//          (MatrixNN::Identity() - K*H).eval().transpose() +
+//          K * R * K.transpose();
+
+    //TODO: update last timestamp here?
   }
 
   /**
@@ -162,6 +155,17 @@ public:
    * @return Current error covariance
    */
   MatrixNN Get_error_covariance() const {return m_P;}
+
+  void Set_state_estimate(const MatrixNN& x)
+  {
+    //TODO: update time
+    m_x = x;
+  }
+
+  void Set_error_covariance(const MatrixNN& p)
+  {
+    m_P = p;
+  }
 
 private:
 
@@ -207,7 +211,8 @@ private:
   MatrixNN m_P;
 
   /**
-   * @brief m_last_timestamp Last update time
+   * @brief m_last_timestamp Last time that the current state estimate was
+   * revised
    */
   double m_last_timestamp;
 
