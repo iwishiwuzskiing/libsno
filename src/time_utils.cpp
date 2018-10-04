@@ -13,7 +13,7 @@ double so::Time_utils::Unix_time()
     sec = boost::numeric_cast<double>(unix_us) / 1.0e6;
   }catch(const boost::bad_numeric_cast& e)
   {
-    throw so::runtime_error(e.what());
+    throw so::Invalid_argument(e.what());
   }
   return sec;
 }

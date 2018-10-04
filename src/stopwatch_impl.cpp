@@ -58,7 +58,7 @@ double so::Stopwatch_impl::Split()
   }
   catch(const boost::bad_numeric_cast& e)
   {
-    throw so::runtime_error(e.what());
+    throw so::Invalid_argument(e.what());
   }
 }
 
@@ -93,7 +93,10 @@ void so::Stopwatch_impl::update_elapsed_time()
     }
     catch(const boost::bad_numeric_cast& e)
     {
-      throw so::runtime_error(e.what());
+      throw so::Invalid_argument("Failed to convert ",
+                                 us,
+                                 " microseconds to seconds: ",
+                                 e.what());
     }
   }
 }

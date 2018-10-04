@@ -3,73 +3,92 @@
 
 #include <exception>
 #include <stdexcept>
+#include <sstream>
+
 
 namespace so
 {
-/**
- * @brief The runtime_error class represents errors that are not detectable
- * until runtime.
- */
-class runtime_error : public std::runtime_error
+
+class Exception : public std::runtime_error
 {
 public:
-  template<class T>
-  runtime_error(const T what)
-    : std::runtime_error(what)
+  Exception() = delete;
+
+  template<class... T>
+  explicit Exception(const T&... what_args)
+    :
+      std::runtime_error(make_what(what_args...))
   {
 
   }
 
+private:
+  template<class U>
+  /**
+   * @brief Base case for recursively unpacking the arguments passed to
+   * constructor. Converts a single argument to a string using a stringstream
+   * @param arg
+   * @return
+   */
+  void what_helper(std::stringstream& ss, const U& arg)
+  {
+    ss << arg;
+  }
+
+
+  template<class U, class... T>
+  void what_helper(std::stringstream& ss,
+                          const U& arg,
+                          const T&... args)
+  {
+    what_helper(ss, arg);
+    what_helper(ss, args...);
+  }
+
+  template<class... T>
+  std::string make_what(const T&... what_args)
+  {
+    std::stringstream ss;
+    what_helper(ss, what_args...);
+    return ss.str();
+  }
 };
 
-/**
- * @brief The logic_error class represents errors that are fundamental flaws
- * in the application's logic, errors that could be detected at compile time
- * or through static analysis
- */
-class logic_error : public std::logic_error
+
+class Invalid_argument : public so::Exception
 {
 public:
-  template<class T>
-  logic_error(const T what)
-    :std::logic_error(what)
+  template<class... T>
+  explicit Invalid_argument(const T&... what_args)
+    : so::Exception(what_args...)
   {
 
   }
 };
 
-class Invalid_argument : public so::runtime_error
+class Read_error : public so::Exception
 {
 public:
-  template<class T>
-  Invalid_argument(const T what)
-    : so::runtime_error(what)
+  template<class... T>
+  explicit Read_error(const T&... what_args)
+    : so::Exception(what_args...)
   {
 
   }
 };
 
-class Read_error : public so::runtime_error
+class Write_error : public so::Exception
 {
 public:
-  template<class T>
-  Read_error(const T what)
-    : so::runtime_error(what)
+  template<class... T>
+  explicit Write_error(const T&... what_args)
+    : so::Exception(what_args...)
   {
 
   }
 };
 
-class Write_error : public so::runtime_error
-{
-public:
-  template<class T>
-  Write_error(const T what)
-    : so::runtime_error(what)
-  {
 
-  }
-};
 
 } // namespace so
 

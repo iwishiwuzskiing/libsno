@@ -1,5 +1,5 @@
-#ifndef ERROR_CODES_H
-#define ERROR_CODES_H
+#ifndef SO_ERROR_CODES_H
+#define SO_ERROR_CODES_H
 
 namespace so
 {

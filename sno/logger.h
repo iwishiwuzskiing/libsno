@@ -1,13 +1,13 @@
 /**
- * \class Err_log Error logging class
- * Err_log provides a basic error logging class. The class provides error
+ * \class Basic_logger Error logging class
+ * Basic_logger provides a basic error logging class. The class provides error
  * logging through the stream insertion operator (<<).
  *
  */
 //todo: documentations
 
-#ifndef ERRLOG_H
-#define ERRLOG_H
+#ifndef SO_BASIC_LOGGER_H
+#define SO_BASIC_LOGGER_H
 
 #include <string>
 #include <stdio.h>
@@ -15,33 +15,22 @@
 
 #include <boost/atomic.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/current_function.hpp>
 
-//////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief The null_deleter struct is used as a no-op deleter for
- * boost::shared_ptrs to statically allocated objects
- */
-struct null_deleter
+namespace so
 {
-  void operator()(void const *) const
-  {
-  }
-};
-
-//////////////////////////////////////////////////////////////////////////////
 
 /**
  * Struct is used to define the default stream type and the functions used for
  * functors that manipulate streams *
  */
 template<typename C,typename T = std::char_traits<C> >
-struct stream_info
+struct Stream_info
 {
   typedef std::basic_ostream<C,T>& (*StrFunc)(std::basic_ostream<C,T>&);
-  static std::basic_ostream<C,T>& Get_default();
+  static boost::shared_ptr<std::basic_ostream<C,T>> Get_default();
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -56,20 +45,20 @@ public:
    */
   enum Log_level
   {
-    Debug     = 0xFFFFFFFFFF,
-    Debug_Tx  = 0x01FFFFFFFF,
-    Debug_Rx  = 0x02FFFFFFFF,
-    Debug_3   = 0x04FFFFFFFF,
-    Debug_4   = 0x08FFFFFFFF,
-    Debug_5   = 0x10FFFFFFFF,
-    Debug_6   = 0x20FFFFFFFF,
-    Debug_7   = 0x40FFFFFFFF,
-    Debug_8   = 0x80FFFFFFFF,
+    Debug     = 0xFFFFFFFFFF, ///< All Debug or higher messages
+    Debug_0   = 0x01FFFFFFFF,
+    Debug_1   = 0x02FFFFFFFF,
+    Debug_2   = 0x04FFFFFFFF,
+    Debug_3   = 0x08FFFFFFFF,
+    Debug_4   = 0x10FFFFFFFF,
+    Debug_5   = 0x20FFFFFFFF,
+    Debug_6   = 0x40FFFFFFFF,
+    Debug_7   = 0x80FFFFFFFF,
 
-    Info      = 0x00FFFFFFFF,
-    Warning   = 0x0000FFFFFF,
-    Severe    = 0x000000FFFF,
-    Fatal     = 0x00000000FF,
+    Info      = 0x00FFFFFFFF, ///< All Info or higher messages
+    Warning   = 0x0000FFFFFF, ///< All Warning or higher messages
+    Severe    = 0x000000FFFF, ///< All Severe or higher messages
+    Fatal     = 0x00000000FF, ///< All Fatal or higher messages
   };
 
   //Functions
@@ -100,7 +89,7 @@ public:
                const Log_level level,
                const std::string file)
     :
-      m_alt_stream(new std::ofstream(file.c_str(), std::ios_base::app)),
+      m_alt_stream(new std::ofstream(file, std::ios_base::app)),
       m_msg_level(level),
       m_lock(m_mutex)
   {
@@ -138,7 +127,8 @@ public:
   static void Set_log_file(std::string filename)
   {
     boost::mutex::scoped_lock lock(m_mutex);
-    m_out_stream.reset(new std::ofstream(filename.c_str(),std::ios_base::app));
+    m_out_stream = boost::make_shared<std::ofstream>(filename,
+                                                     std::ios_base::app);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -154,7 +144,8 @@ public:
       if(m_alt_stream)
       {
         *m_alt_stream << obj;
-      }else if(m_out_stream)
+      }
+      else if(m_out_stream)
       {
         *m_out_stream << obj;
       }
@@ -167,14 +158,15 @@ public:
   /**
    * Stream insertion operator.
    */
-  Basic_logger& operator<<(typename stream_info<C,T>::StrFunc func)
+  Basic_logger& operator<<(typename Stream_info<C,T>::StrFunc func)
   {
     if( (m_msg_level & m_logging_mask) == m_msg_level )
     {
       if(m_alt_stream)
       {
         func(*m_alt_stream);
-      }else if(m_out_stream)
+      }
+      else if(m_out_stream)
       {
         func(*m_out_stream);
       }
@@ -199,14 +191,16 @@ private:
   /**
    * @brief m_out_stream Main stream for error logging. Defaults to std::cout
    * or std::wcout, but can be set to a file
+   * Implemented as a shared pointer so that a new stream can be created when
+   * users call Set_log_file()
    */
-  //TODO: why is this a shared pointer?
   static boost::shared_ptr<std::basic_ostream<C,T> > m_out_stream;
 
   /**
    * @brief m_local_stream Alternate stream for writing to a particular file
+   * Implemented as a shared pointer because a null alternate stream indicates
+   * the default should be used
    */
-  //TODO: why is this a shared pointer?
   boost::shared_ptr<std::basic_ostream<C,T> > m_alt_stream;
 
   /**
@@ -220,16 +214,6 @@ private:
   boost::unique_lock<boost::mutex> m_lock;
 
   //Functions
-  /**
-   * @brief set_ostream
-   * @param stream
-   */
-  static void set_ostream(boost::shared_ptr<std::basic_ostream<C,T> > stream)
-  {
-    m_out_stream = stream;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * @brief get_msg_prefix Get the start of the log message. The message prefix
@@ -274,32 +258,26 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-// Initialize static members
-/**
- * @brief Mutex
- */
-template<typename C, typename T>
-boost::mutex Basic_logger<C, T>::m_mutex;
-
-/**
- * @brief The current error logging magnitude
- */
-template<typename C, typename T>
-uint64_t Basic_logger<C ,T>::m_logging_mask(Basic_logger<C,T>::Debug);
-
-/**
- * @brief m_out_stream The stream for writing errors to
- * Implemented as a pointer so because a null stream is used to signify that
- * errors should be logged to the default stream
- */
-template<typename C,typename T>
-boost::shared_ptr<std::basic_ostream<C,T> > Basic_logger<C,T>::m_out_stream(&stream_info<C,T>::Get_default(), null_deleter());
-
-//////////////////////////////////////////////////////////////////////////////
 // Typedefs for common types of error loggers
 typedef Basic_logger<wchar_t> WLogger;
 typedef Basic_logger<char> Logger;
 
+} // namespace so
+
+//////////////////////////////////////////////////////////////////////////////
+// Initialize static members
+
+template<typename C, typename T>
+boost::mutex so::Basic_logger<C, T>::m_mutex;
+
+
+template<typename C, typename T>
+uint64_t so::Basic_logger<C ,T>::m_logging_mask(Basic_logger<C,T>::Debug);
+
+template<typename C,typename T>
+boost::shared_ptr<std::basic_ostream<C,T> > so::Basic_logger<C,T>::m_out_stream(so::Stream_info<C,T>::Get_default());
+
+//////////////////////////////////////////////////////////////////////////////
 //Macros to automatically insert scope
 #define Log_msg(...) Logger(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
 #define Log_wmsg(...) WLogger(BOOST_CURRENT_FUNCTION,__VA_ARGS__)
