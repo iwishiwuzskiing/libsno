@@ -31,6 +31,31 @@ public:
 public:
   /**
    * @brief Constructor, a new Kalman filter.
+   * @param A Function that calculates the state transition matrix (NxN)
+   * @param B Function that calculates the control input model (NxM)
+   * @param Q  Function that calculates the process noise covariance (NxN)
+   * @param x0 Initial system state, Nx1
+   * @param P0 Initial error covariance, NxN
+   * @param t0 Initial timestamp
+   */
+  Kalman_filter(MatrixNN(*A)(const double),
+                MatrixNM(*B)(const double),
+                MatrixNN(*Q)(const double),
+                const MatrixN1& x0,
+                const MatrixNN& P0,
+                const double t0)
+    :
+      m_A(A),
+      m_B(B),
+      m_Q(Q),
+      m_x(x0),
+      m_P(P0),
+      m_last_timestamp(t0)
+  {
+  }
+
+  /**
+   * @brief Constructor, a new Kalman filter.
    * @param A State transition matrix, NxN
    * @param B Control input model, NxN      //TODO: NxM?
    * @param Q Process noise covariance, NxN
@@ -38,10 +63,6 @@ public:
    * @param P0 Initial error covariance, NxN
    * @param t0 Initial timestamp
    */
-  //TODO: A is usually going to be a function of dt, not just a static matrix
-  // Instead of passing in an A matrix pass in a pointer to a function that
-  // Takes time as an argument and returns the appropriate A matrix?
-  // Make Predict() and Update() take in a timestamp? Or dt?
   Kalman_filter(const MatrixNN& A,
                 const MatrixNM& B,
                 const MatrixNN& Q,
@@ -51,12 +72,11 @@ public:
     :
       m_A([A](const double){return A;}),
       m_B([B](const double){return B;}),
-      m_Q(Q),
+      m_Q([Q](const double){return Q;}),
       m_x(x0),
       m_P(P0),
       m_last_timestamp(t0)
   {
-
   }
 
   /**
@@ -81,8 +101,9 @@ public:
     m_last_timestamp = t;
     MatrixNN A = m_A(dt);
     MatrixNM B = m_B(dt);
+    MatrixNN Q = m_Q(dt);
     m_x = A * m_x + B * u;
-    m_P = A * m_P * A.transpose() + m_Q;
+    m_P = A * m_P * A.transpose() + Q;
   }
 
   /**
@@ -168,19 +189,6 @@ public:
   }
 
 private:
-
-  /**
-   * @brief m_A State transition matrix. Defines how the state changes based on
-   * current state
-   */
-//  MatrixNN m_A;
-
-  /**
-   * @brief m_B Control input matrix. Defines how the state changes based on
-   * control inputs
-   */
-//  MatrixNN m_B;
-
   /**
    * @brief Function that takes dT as an input and returns the state transition
    * matrix for the given dT
@@ -196,9 +204,10 @@ private:
   std::function<MatrixNM (const double)> m_B;
 
   /**
-   * @brief m_Q Process noise covariance matrix
+   * @brief m_Q Function that takes dT as an input and returns the process noise
+   * covariance matrix matrix for the given dT
    */
-  MatrixNN m_Q;
+  std::function<MatrixNM (const double)> m_Q;
 
   /**
    * @brief x Current system state

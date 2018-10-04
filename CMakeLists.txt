@@ -8,5 +8,5 @@ set(project_name sno)
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My Library")
 #Directory for the rest of our CMake stuff
-set(cmake_dir /usr/local/share/cmake)
+set(cmake_dir /usr/local/share/cmake/so_cmake)
 include(${cmake_dir}/pimpl_lib.cmake)

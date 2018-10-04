@@ -103,7 +103,16 @@ public:
    */
   ~Basic_logger()
   {
-    //TODO: write std::endl to streams?? Just call flush()?
+    //TODO: always flushing the streams could get expensive. Provide a separate
+    // Basic_logger::Flush() function?
+    if(m_alt_stream)
+    {
+      *m_alt_stream << std::endl;
+    }
+    else if(m_out_stream)
+    {
+      *m_out_stream << std::endl;
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////
