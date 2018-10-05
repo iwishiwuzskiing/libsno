@@ -12,8 +12,18 @@ namespace so
 class Exception : public std::runtime_error
 {
 public:
+  /**
+   * @brief Default constructor, deleted
+   */
   Exception() = delete;
 
+  /**
+   * @brief Constructor. A new exception with a message created by inserting the
+   * arguments into a stringstream. Objects will be inserted into the
+   * stringstream in the order they are argued.
+   * @param what_args Objects to insert into a stringstream to create the error
+   * message for this exception
+   */
   template<class... T>
   explicit Exception(const T&... what_args)
     :
@@ -23,32 +33,45 @@ public:
   }
 
 private:
-  template<class U>
   /**
    * @brief Base case for recursively unpacking the arguments passed to
-   * constructor. Converts a single argument to a string using a stringstream
-   * @param arg
-   * @return
+   * constructor. Inserts a single argument to the stringstream.
+   * @param ss Stringstream to insert into to
+   * @param arg Object to insert into the stringstream
    */
-  void what_helper(std::stringstream& ss, const U& arg)
+  template<class U>
+  void what_helper(std::ostringstream& ss, const U& arg)
   {
     ss << arg;
   }
 
 
+  /**
+   * @brief Helper function for adding a set of arguments to a stringstream
+   * @param ss Stringstream to insert into
+   * @param arg Object to insert into the stringstream first
+   * @param args Subsequent objects to insert into the stringstream
+   */
   template<class U, class... T>
-  void what_helper(std::stringstream& ss,
-                          const U& arg,
-                          const T&... args)
+  void what_helper(std::ostringstream& ss,
+                   const U& arg,
+                   const T&... args)
   {
     what_helper(ss, arg);
     what_helper(ss, args...);
   }
 
+  /**
+   * @brief Helper function for creating the what() message for the exception.
+   * Creates the exception's message by inserting the argued values into a
+   * std::stringstream in the order they are argued
+   * @param what_args Arguments to insert into the stringstream
+   * @return Exception what() message
+   */
   template<class... T>
   std::string make_what(const T&... what_args)
   {
-    std::stringstream ss;
+    std::ostringstream ss;
     what_helper(ss, what_args...);
     return ss.str();
   }
