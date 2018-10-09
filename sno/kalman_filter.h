@@ -43,14 +43,16 @@ public:
                 MatrixNN(*Q)(const double),
                 const MatrixN1& x0,
                 const MatrixNN& P0,
-                const double t0)
+                const double t0,
+                const bool polar_correct = false)
     :
       m_A(A),
       m_B(B),
       m_Q(Q),
       m_x(x0),
       m_P(P0),
-      m_last_timestamp(t0)
+      m_last_timestamp(t0),
+      m_polar_correct(polar_correct)
   {
   }
 
@@ -68,14 +70,16 @@ public:
                 const MatrixNN& Q,
                 const MatrixN1& x0,
                 const MatrixNN& P0,
-                const double t0)
+                const double t0,
+                const bool polar_correct = false)
     :
       m_A([A](const double){return A;}),
       m_B([B](const double){return B;}),
       m_Q([Q](const double){return Q;}),
       m_x(x0),
       m_P(P0),
-      m_last_timestamp(t0)
+      m_last_timestamp(t0),
+      m_polar_correct(polar_correct)
   {
   }
 
@@ -145,11 +149,27 @@ public:
     // Innovation
     Eigen::Matrix<double, U, 1> y = z - H * m_x;
 
+    // Polar corret
+    if(m_polar_correct)
+    {
+      // Degrees
+      for(int r = 0; r < y.rows(); r++)
+      {
+        //FIXME: polar correction function
+        if( std::fabs(y(r)) > 180.0)
+        {
+          y(r) = ( (-y(r)/std::fabs(y(r)) ) * 360.0) + y(r);
+        }
+      }
+    }
+
     // Innovation covariance
     Eigen::Matrix<double, U, U> S = H * m_P * H.transpose() + R;
 
     // Optimal Kalman gain
     const Eigen::Matrix<double, N, U> K = m_P * H.transpose() * S.inverse();
+
+
 
     // Update state estimate
     m_x = m_x + K * y;
@@ -224,6 +244,11 @@ private:
    * revised
    */
   double m_last_timestamp;
+
+  /**
+   * @brief m_polar_correct True if values should be polar corrected
+   */
+  bool m_polar_correct;
 
 };
 } //namespace so
