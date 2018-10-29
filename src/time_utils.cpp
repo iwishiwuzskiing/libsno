@@ -4,7 +4,6 @@
 
 double so::Time_utils::Unix_time()
 {
-  using namespace std::chrono;
   auto unix_timestamp = std::chrono::seconds(std::time(nullptr));
   ssize_t unix_us = std::chrono::microseconds(unix_timestamp).count();
   double sec = 0;
