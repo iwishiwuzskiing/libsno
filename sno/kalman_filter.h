@@ -43,7 +43,6 @@ public:
                 MatrixNN(*Q)(const double),
                 const MatrixN1& x0,
                 const MatrixNN& P0,
-                const double t0,
                 const bool polar_correct = false)
     :
       m_A(A),
@@ -51,7 +50,6 @@ public:
       m_Q(Q),
       m_x(x0),
       m_P(P0),
-      m_last_timestamp(t0),
       m_polar_correct(polar_correct)
   {
   }
@@ -70,7 +68,6 @@ public:
                 const MatrixNN& Q,
                 const MatrixN1& x0,
                 const MatrixNN& P0,
-                const double t0,
                 const bool polar_correct = false)
     :
       m_A([A](const double){return A;}),
@@ -78,7 +75,6 @@ public:
       m_Q([Q](const double){return Q;}),
       m_x(x0),
       m_P(P0),
-      m_last_timestamp(t0),
       m_polar_correct(polar_correct)
   {
   }
@@ -101,11 +97,9 @@ public:
    */
   void Predict(const MatrixM1& u, const double t)
   {
-    double dt = t - m_last_timestamp;
-    m_last_timestamp = t;
-    MatrixNN A = m_A(dt);
-    MatrixNM B = m_B(dt);
-    MatrixNN Q = m_Q(dt);
+    MatrixNN A = m_A(t);
+    MatrixNM B = m_B(t);
+    MatrixNN Q = m_Q(t);
     m_x = A * m_x + B * u;
     m_P = A * m_P * A.transpose() + Q;
   }
@@ -138,7 +132,8 @@ public:
    * function should be called to propagate the estimated solution up to the
    * current timestamp before update.
    * @param z Observation, Ux1
-   * @param H Observation model, maps true state space to observed state space, UxN
+   * @param H Observation model, maps observation state space into filter state
+   * space, UxN
    * @param R Observation error covariance, UxU
    */
   template<int U>
@@ -210,22 +205,22 @@ public:
 
 private:
   /**
-   * @brief Function that takes dT as an input and returns the state transition
-   * matrix for the given dT
-   * @return State transition (A) matrix for the given dT
+   * @brief Function that takes time as an input and returns the state transition
+   * matrix for the given time
+   * @return State transition (A) matrix for the given time
    */
   std::function<MatrixNN (const double)> m_A;
 
   /**
-   * @brief Function that takes dT as an input and returns the control input
-   * matrix for the given dT
-   * @return Control input (B) matrix for the given dT
+   * @brief Function that takes time as an input and returns the control input
+   * matrix for the given time
+   * @return Control input (B) matrix for the given time
    */
   std::function<MatrixNM (const double)> m_B;
 
   /**
-   * @brief m_Q Function that takes dT as an input and returns the process noise
-   * covariance matrix matrix for the given dT
+   * @brief m_Q Function that takes time as an input and returns the process noise
+   * covariance matrix matrix for the given time
    */
   std::function<MatrixNM (const double)> m_Q;
 
@@ -238,12 +233,6 @@ private:
    * @brief P Current estimate error covariance matrix
    */
   MatrixNN m_P;
-
-  /**
-   * @brief m_last_timestamp Last time that the current state estimate was
-   * revised
-   */
-  double m_last_timestamp;
 
   /**
    * @brief m_polar_correct True if values should be polar corrected

@@ -9,10 +9,13 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My Library")
 
 #################################
 ## Library specific includes
-set(libs ${libs} python3.5m)
-
+#find_package (Python3 COMPONENTS Interpreter Development)
+find_package(PythonLibs)
+set(libs ${libs} ${PYTHON_LIBRARIES})
 
 #Directory for the rest of our CMake stuff
 set(cmake_dir /usr/local/share/cmake/so_cmake)
 include(${cmake_dir}/pimpl_lib.cmake)
-target_include_directories(${project_name} PUBLIC /usr/include/python3.5)
+target_include_directories(${project_name} PUBLIC ${PYTHON_INCLUDE_DIRS})
+
+
