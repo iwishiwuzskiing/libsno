@@ -205,8 +205,8 @@ public:
 
 private:
   /**
-   * @brief Function that takes time as an input and returns the state transition
-   * matrix for the given time
+   * @brief Function that takes time as an input and returns the state
+   * transition matrix for the given time
    * @return State transition (A) matrix for the given time
    */
   std::function<MatrixNN (const double)> m_A;
@@ -219,8 +219,8 @@ private:
   std::function<MatrixNM (const double)> m_B;
 
   /**
-   * @brief m_Q Function that takes time as an input and returns the process noise
-   * covariance matrix matrix for the given time
+   * @brief m_Q Function that takes time as an input and returns the process
+   * noise covariance matrix matrix for the given time
    */
   std::function<MatrixNM (const double)> m_Q;
 
