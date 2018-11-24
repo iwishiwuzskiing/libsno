@@ -10,10 +10,9 @@
 #define SO_KALMAN_FILTER_H
 #include <stddef.h>
 #include <functional>
-
+#include <bitset>
+#include <type_traits>
 #include <eigen3/Eigen/Dense>
-
-#include <sno/time_utils.h>
 
 namespace so
 {
@@ -38,12 +37,40 @@ public:
    * @param P0 Initial error covariance, NxN
    * @param t0 Initial timestamp
    */
+  template<class S, class T>
+  Kalman_filter(S* model,
+                MatrixNN(S::*A)(const double),
+                MatrixNM(S::*B)(const double),
+                MatrixNN(S::*Q)(const double),
+                const MatrixN1& x0,
+                const MatrixNN& P0,
+                const std::bitset<N> polar_correct = false,
+                typename std::enable_if<std::is_base_of<T,S>::value>::type* = nullptr)
+    :
+      m_A([model, A](const double t)->MatrixNN {return model->A(t);}),
+      m_B([model, B](const double t)->MatrixNM {return model->B(t);}),
+      m_Q([model, Q](const double t)->MatrixNN {return model->Q(t);}),
+      m_x(x0),
+      m_P(P0),
+      m_polar_correct(polar_correct)
+  {
+  }
+
+  /**
+   * @brief Constructor, a new Kalman filter.
+   * @param A Function that calculates the state transition matrix (NxN)
+   * @param B Function that calculates the control input model (NxM)
+   * @param Q  Function that calculates the process noise covariance (NxN)
+   * @param x0 Initial system state, Nx1
+   * @param P0 Initial error covariance, NxN
+   * @param t0 Initial timestamp
+   */
   Kalman_filter(MatrixNN(*A)(const double),
                 MatrixNM(*B)(const double),
                 MatrixNN(*Q)(const double),
                 const MatrixN1& x0,
                 const MatrixNN& P0,
-                const bool polar_correct = false)
+                const std::bitset<N> polar_correct = false)
     :
       m_A(A),
       m_B(B),
@@ -68,7 +95,7 @@ public:
                 const MatrixNN& Q,
                 const MatrixN1& x0,
                 const MatrixNN& P0,
-                const bool polar_correct = false)
+                const std::bitset<N> polar_correct = false)
     :
       m_A([A](const double){return A;}),
       m_B([B](const double){return B;}),
@@ -145,15 +172,19 @@ public:
     Eigen::Matrix<double, U, 1> y = z - H * m_x;
 
     // Polar corret
-    if(m_polar_correct)
+    if(m_polar_correct.any())
     {
-      // Degrees
+
       for(int r = 0; r < y.rows(); r++)
       {
-        //FIXME: polar correction function
-        if( std::fabs(y(r)) > 180.0)
+        if(m_polar_correct[r])
         {
-          y(r) = ( (-y(r)/std::fabs(y(r)) ) * 360.0) + y(r);
+          //FIXME: polar correction function
+          // Degrees
+          if( std::fabs(y(r)) > 180.0)
+          {
+            y(r) = ( (-y(r)/std::fabs(y(r)) ) * 360.0) + y(r);
+          }
         }
       }
     }
@@ -219,25 +250,25 @@ private:
   std::function<MatrixNM (const double)> m_B;
 
   /**
-   * @brief m_Q Function that takes time as an input and returns the process
+   * @brief Function that takes time as an input and returns the process
    * noise covariance matrix matrix for the given time
    */
   std::function<MatrixNM (const double)> m_Q;
 
   /**
-   * @brief x Current system state
+   * @brief Current system state
    */
   MatrixN1 m_x;
 
   /**
-   * @brief P Current estimate error covariance matrix
+   * @brief Current estimate error covariance matrix
    */
   MatrixNN m_P;
 
   /**
-   * @brief m_polar_correct True if values should be polar corrected
+   * @brief True if values should be polar corrected
    */
-  bool m_polar_correct;
+  std::bitset<N> m_polar_correct;
 
 };
 } //namespace so
