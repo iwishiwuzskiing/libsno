@@ -32,20 +32,20 @@ public:
    * @brief Constructor, a new Kalman filter.
    * @param A Function that calculates the state transition matrix (NxN)
    * @param B Function that calculates the control input model (NxM)
-   * @param Q  Function that calculates the process noise covariance (NxN)
+   * @param Q Function that calculates the process noise covariance (NxN)
    * @param x0 Initial system state, Nx1
    * @param P0 Initial error covariance, NxN
    * @param t0 Initial timestamp
    */
   template<class S, class T>
-  Kalman_filter(S* model,
+  Kalman_filter(T* model,
                 MatrixNN(S::*A)(const double),
                 MatrixNM(S::*B)(const double),
                 MatrixNN(S::*Q)(const double),
                 const MatrixN1& x0,
                 const MatrixNN& P0,
                 const std::bitset<N> polar_correct = false,
-                typename std::enable_if<std::is_base_of<T,S>::value>::type* = nullptr)
+                typename std::enable_if<std::is_base_of<S,T>::value>::type* = nullptr)
     :
       m_A([model, A](const double t)->MatrixNN {return model->A(t);}),
       m_B([model, B](const double t)->MatrixNM {return model->B(t);}),
@@ -60,7 +60,7 @@ public:
    * @brief Constructor, a new Kalman filter.
    * @param A Function that calculates the state transition matrix (NxN)
    * @param B Function that calculates the control input model (NxM)
-   * @param Q  Function that calculates the process noise covariance (NxN)
+   * @param Q Function that calculates the process noise covariance (NxN)
    * @param x0 Initial system state, Nx1
    * @param P0 Initial error covariance, NxN
    * @param t0 Initial timestamp
@@ -84,7 +84,7 @@ public:
   /**
    * @brief Constructor, a new Kalman filter.
    * @param A State transition matrix, NxN
-   * @param B Control input model, NxN      //TODO: NxM?
+   * @param B Control input model, NxM
    * @param Q Process noise covariance, NxN
    * @param x0 Initial system state, Nx1
    * @param P0 Initial error covariance, NxN
@@ -195,8 +195,6 @@ public:
     // Optimal Kalman gain
     const Eigen::Matrix<double, N, U> K = m_P * H.transpose() * S.inverse();
 
-
-
     // Update state estimate
     m_x = m_x + K * y;
 
@@ -207,8 +205,6 @@ public:
 //    m_P = (MatrixNN::Identity() - K*H) * m_P *
 //          (MatrixNN::Identity() - K*H).eval().transpose() +
 //          K * R * K.transpose();
-
-    //TODO: update last timestamp here?
   }
 
   /**
@@ -223,9 +219,8 @@ public:
    */
   MatrixNN Get_error_covariance() const {return m_P;}
 
-  void Set_state_estimate(const MatrixNN& x)
+  void Set_state_estimate(const MatrixN1& x)
   {
-    //TODO: update time
     m_x = x;
   }
 
