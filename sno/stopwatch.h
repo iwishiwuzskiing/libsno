@@ -14,6 +14,16 @@ public:
   Stopwatch();
 
   /**
+   * @brief Destructor
+   */
+  ~Stopwatch();
+
+  Stopwatch(const Stopwatch& other);
+  Stopwatch& operator=(Stopwatch other);
+  Stopwatch(Stopwatch&& other);
+  Stopwatch& operator=(Stopwatch&& other);
+
+  /**
    * @brief Start the stopwatch
    */
   void Start();
@@ -52,7 +62,7 @@ private:
   /**
    * @brief m_pimpl Implementation class
    */
-  std::shared_ptr<Stopwatch_impl> m_pimpl;
+  std::unique_ptr<Stopwatch_impl> m_pimpl;
 };
 
 } // namespace so

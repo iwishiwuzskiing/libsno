@@ -10,8 +10,8 @@
 #define SO_BASIC_LOGGER_H
 
 #include <string>
-#include <stdio.h>
 #include <fstream>
+#include <iostream>
 
 #include <boost/atomic.hpp>
 #include <boost/shared_ptr.hpp>
