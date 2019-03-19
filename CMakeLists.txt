@@ -16,6 +16,6 @@ set(libs ${libs} ${PYTHON_LIBRARIES})
 #Directory for the rest of our CMake stuff
 set(cmake_dir /usr/local/share/cmake/so_cmake)
 include(${cmake_dir}/pimpl_lib.cmake)
-target_include_directories(${project_name} PUBLIC ${PYTHON_INCLUDE_DIRS})
+target_include_directories(${project_name} SYSTEM PUBLIC ${PYTHON_INCLUDE_DIRS})
 
 
