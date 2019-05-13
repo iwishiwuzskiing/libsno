@@ -1,0 +1,6 @@
+site_name: project_template
+docs_dir: ./
+nav:
+  - Home: docs/index.md
+  - Readme: README.md
+theme: readthedocs  
