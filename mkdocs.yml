@@ -1,5 +1,5 @@
 site_name: project_template
-docs_dir: ./
+#docs_dir: ./
 nav:
   - Home: docs/index.md
   - Readme: README.md
