@@ -2,5 +2,5 @@ site_name: project_template
 #docs_dir: ./
 nav:
   - Home: index.md
-  - Readme: README.md
+  - Readme: test.md
 theme: readthedocs  
