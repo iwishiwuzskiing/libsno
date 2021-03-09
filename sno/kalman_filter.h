@@ -34,7 +34,7 @@ public:
    * @param B Function that calculates the control input model (NxM)
    * @param Q Function that calculates the process noise covariance (NxN)
    * @param x0 Initial system state, Nx1
-   * @param P0 Initial error covariance, NxN
+   * @param P0 Initial estimate covariance, NxN
    * @param t0 Initial timestamp
    */
   template<class S, class T>
@@ -62,7 +62,7 @@ public:
    * @param B Function that calculates the control input model (NxM)
    * @param Q Function that calculates the process noise covariance (NxN)
    * @param x0 Initial system state, Nx1
-   * @param P0 Initial error covariance, NxN
+   * @param P0 Initial estimate covariance, NxN
    * @param t0 Initial timestamp
    */
   Kalman_filter(MatrixNN(*A)(const double),
@@ -87,7 +87,7 @@ public:
    * @param B Control input model, NxM
    * @param Q Process noise covariance, NxN
    * @param x0 Initial system state, Nx1
-   * @param P0 Initial error covariance, NxN
+   * @param P0 Initial estimate covariance, NxN
    * @param t0 Initial timestamp
    */
   Kalman_filter(const MatrixNN& A,
@@ -171,10 +171,9 @@ public:
     // Innovation
     Eigen::Matrix<double, U, 1> y = z - H * m_x;
 
-    // Polar corret
+    // Polar correct
     if(m_polar_correct.any())
     {
-
       for(int r = 0; r < y.rows(); r++)
       {
         if(m_polar_correct[r])
@@ -196,9 +195,10 @@ public:
     const Eigen::Matrix<double, N, U> K = m_P * H.transpose() * S.inverse();
 
     // Update state estimate
+    // TODO: polar correct again after updating state estimate?
     m_x = m_x + K * y;
 
-    // Update error covariance
+    // Update estimate covariance
     m_P = (MatrixNN::Identity() - K*H) * m_P;
 
     // Joseph form of error covariance, valid for any Kalman gain
@@ -214,17 +214,17 @@ public:
   MatrixN1 Get_state_estimate() const {return m_x;}
 
   /**
-   * @brief Get the current error covariance (P)
-   * @return Current error covariance
+   * @brief Get the current state estimate covariance (P)
+   * @return Current state estimate
    */
-  MatrixNN Get_error_covariance() const {return m_P;}
+  MatrixNN Get_estimate_covariance() const {return m_P;}
 
   void Set_state_estimate(const MatrixN1& x)
   {
     m_x = x;
   }
 
-  void Set_error_covariance(const MatrixNN& p)
+  void Set_estimate_covariance(const MatrixNN& p)
   {
     m_P = p;
   }
@@ -256,7 +256,7 @@ private:
   MatrixN1 m_x;
 
   /**
-   * @brief Current estimate error covariance matrix
+   * @brief Current estimate covariance matrix
    */
   MatrixNN m_P;
 
